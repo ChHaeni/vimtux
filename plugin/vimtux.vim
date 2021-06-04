@@ -114,6 +114,22 @@ function! s:TmuxPanes()
     return system('tmux list-panes -t "' . s:vimtux['session'] . '":' . s:vimtux['window'] . " | sed -e 's/:.*$//'")
 endfunction
 
+" check session/window/pane name
+function! s:CheckName(what, names)
+    let checkname = 0
+    for name in a:names
+        if name == s:vimtux[a:what]
+            let checkname += 1
+        endif
+    endfor
+    if checkname == 0
+        redraw
+        echohl WarningMsg | echomsg a:what . ' ' . s:vimtux[a:what] . ' does not exist!' | echohl None
+    endif
+    return checkname
+endfunction
+
+
 " Set variables for TmuxTarget().
 function! s:TmuxVars()
     let s:vimtux = {}
@@ -136,6 +152,13 @@ function! s:TmuxVars()
         call inputsave()
         let s:vimtux['session'] = input("session name: ", "", "custom,TmuxSessionNames")
         call inputrestore()
+        if s:CheckName('session', names) == 0
+            let s:vimtux['session'] = ''
+            echo 'sessions running:'
+            for name in names
+                echohl Identifier | echo name | echohl None
+            endfor
+        endif
     endwhile
 
     let windows = split(s:TmuxWindows(), "\n")
@@ -161,6 +184,7 @@ function! s:TmuxVars()
             let s:vimtux['pane'] = panes[0]
         endif
     endif
+
 
     let b:vimtux = s:vimtux
 endfunction
