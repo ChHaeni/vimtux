@@ -107,25 +107,29 @@ endfunction
 " g:vimtux' condition in the definition of the 'SendToTmux(text)' function
 " above.
 function! s:TmuxWindows()
-    return system('tmux list-windows -t "' . b:vimtux['session'] . '" | grep -e "^\w:" | sed -e "s/\s*([0-9].*//g"')
+    return system('tmux list-windows -t "' . s:vimtux['session'] . '" | grep -e "^\w:" | sed -e "s/\s*([0-9].*//g"')
 endfunction
 
 function! s:TmuxPanes()
-    return system('tmux list-panes -t "' . b:vimtux['session'] . '":' . b:vimtux['window'] . " | sed -e 's/:.*$//'")
+    return system('tmux list-panes -t "' . s:vimtux['session'] . '":' . s:vimtux['window'] . " | sed -e 's/:.*$//'")
 endfunction
 
 " Set variables for TmuxTarget().
 function! s:TmuxVars()
-    let names = split(s:TmuxSessions(), "\n")
-    let b:vimtux = {}
-    if len(names) == 1
-        let b:vimtux['session'] = names[0]
-    else
-        let b:vimtux['session'] = ''
+    let s:vimtux = {}
+    if exists('b:vimtux') == 0
+        let b:vimtux = {}
     endif
-    while empty(b:vimtux['session'])
+
+    let names = split(s:TmuxSessions(), "\n")
+    if len(names) == 1
+        let s:vimtux['session'] = names[0]
+    else
+        let s:vimtux['session'] = ''
+    endif
+    while empty(s:vimtux['session'])
         call inputsave()
-        let b:vimtux['session'] = input("session name: ", "", "custom,TmuxSessionNames")
+        let s:vimtux['session'] = input("session name: ", "", "custom,TmuxSessionNames")
         call inputrestore()
     endwhile
 
@@ -141,17 +145,19 @@ function! s:TmuxVars()
         endif
     endif
 
-    let b:vimtux['window'] =  substitute(window, ":.*$" , '', 'g')
+    let s:vimtux['window'] =  substitute(window, ":.*$" , '', 'g')
 
     let panes = split(s:TmuxPanes(), "\n")
     if len(panes) == 1
-        let b:vimtux['pane'] = panes[0]
+        let s:vimtux['pane'] = panes[0]
     else
-        let b:vimtux['pane'] = input("pane number: ", "", "custom,TmuxPaneNumbers")
-        if empty(b:vimtux['pane'])
-            let b:vimtux['pane'] = panes[0]
+        let s:vimtux['pane'] = input("pane number: ", "", "custom,TmuxPaneNumbers")
+        if empty(s:vimtux['pane'])
+            let s:vimtux['pane'] = panes[0]
         endif
     endif
+
+    let b:vimtux = s:vimtux
 endfunction
 
 
