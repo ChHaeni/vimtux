@@ -189,6 +189,35 @@ function! s:TmuxVars()
     let b:vimtux = s:vimtux
 endfunction
 
+" try popup menu
+function! TmuxPop()
+    let s:vimtux = {}
+    let s:tmuxsessions = split(s:TmuxSessions(), "\n")
+    " call popup_menu(s:tmuxsessions, #{callback: '<SID>CbSession', })
+    call popup_menu(s:tmuxsessions, #{callback: 'CbSession', })
+endfunction
+
+" what to do after selecting session
+" function! s:CbSession(id, entry)
+function! CbSession(id, entry)
+    let s:vimtux['session'] = s:tmuxsessions[a:entry - 1]
+    let s:sessionwindows = split(s:TmuxWindows(), "\n")
+    call popup_menu(s:sessionwindows, #{callback: 'CbWindow', })
+endfunction
+
+" what to do after selecting window
+function! CbWindow(id, entry)
+    let s:vimtux['window'] = substitute(s:sessionwindows[a:entry - 1], ":.*$", '', 'g')
+    let s:windowpanes = split(s:TmuxPanes(), "\n")
+    call popup_menu(s:windowpanes, #{callback: 'CbPane', })
+endfunction
+
+" what to do after selecting pane
+function! CbPane(id, entry)
+    let s:vimtux['pane'] = s:windowpanes[a:entry - 1]
+    let b:vimtux = s:vimtux
+endfunction
+
 
 " <Plug> definition for SendToTmux().
 vmap <unique> <Plug>SendSelectionToTmux y :call SendToTmux(@")<CR>
