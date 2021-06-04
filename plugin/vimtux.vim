@@ -185,39 +185,64 @@ function! s:TmuxVars()
         endif
     endif
 
-
     let b:vimtux = s:vimtux
+    call CheckTmuxTarget()
 endfunction
 
 " try popup menu
 function! TmuxPop()
     let s:vimtux = {}
     let s:tmuxsessions = split(s:TmuxSessions(), "\n")
-    " call popup_menu(s:tmuxsessions, #{callback: '<SID>CbSession', })
-    call popup_menu(s:tmuxsessions, #{callback: 'CbSession', })
+    if len(s:tmuxsessions) == 1
+        call CbSession(0, 1)
+    else
+        call popup_menu(s:tmuxsessions, #{callback: 'CbSession', title: 'session name:', })
+    endif
 endfunction
 
 " what to do after selecting session
-" function! s:CbSession(id, entry)
-function! CbSession(id, entry)
+function CbSession(id, entry)
     let s:vimtux['session'] = s:tmuxsessions[a:entry - 1]
     let s:sessionwindows = split(s:TmuxWindows(), "\n")
-    call popup_menu(s:sessionwindows, #{callback: 'CbWindow', })
+    if len(s:sessionwindows) == 1
+        call CbWindow(0, 1)
+    else
+        call popup_menu(s:sessionwindows, #{callback: 'CbWindow', title: 'window name:', })
+    endif
 endfunction
 
 " what to do after selecting window
-function! CbWindow(id, entry)
+function CbWindow(id, entry)
     let s:vimtux['window'] = substitute(s:sessionwindows[a:entry - 1], ":.*$", '', 'g')
     let s:windowpanes = split(s:TmuxPanes(), "\n")
-    call popup_menu(s:windowpanes, #{callback: 'CbPane', })
+    if len(s:windowpanes) == 1
+        call CbPane(0, 1)
+    else
+        call popup_menu(s:windowpanes, #{callback: 'CbPane', title: 'pane number:', })
+    endif
 endfunction
 
 " what to do after selecting pane
-function! CbPane(id, entry)
+function CbPane(id, entry)
     let s:vimtux['pane'] = s:windowpanes[a:entry - 1]
     let b:vimtux = s:vimtux
+    call CheckTmuxTarget()
 endfunction
 
+" check current target
+function! CheckTmuxTarget()
+    if exists('b:vimtux') && empty(b:vimtux) == 0
+        echohl None | echon 'sending to session:' |
+                    \ echohl Identifier | echon b:vimtux['session'] |
+                    \ echohl None | echon ' window:' |
+                    \ echohl Identifier | echon b:vimtux['window'] |
+                    \ echohl None | echon ' pane:' |
+                    \ echohl Identifier | echon b:vimtux['pane'] |
+                    \ echohl None 
+    else
+        echomsg 'no tmux target defined'
+    endif
+endfunction
 
 " <Plug> definition for SendToTmux().
 vmap <unique> <Plug>SendSelectionToTmux y :call SendToTmux(@")<CR>
