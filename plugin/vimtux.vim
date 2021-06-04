@@ -251,7 +251,11 @@ vmap <unique> <Plug>SendSelectionToTmux y :call SendToTmux(@")<CR>
 nmap <unique> <Plug>NormalModeSendToTmux V <Plug>SendSelectionToTmux
 
 " <Plug> definition for SetTmuxVars().
-nmap <unique> <Plug>SetTmuxVars :call <SID>TmuxVars()<CR>
+if exists("g:vimtux_popup") && g:vimtux_popup
+    nmap <unique> <Plug>SetTmuxVars :call <SID>TmuxPopup()<CR>
+else
+    nmap <unique> <Plug>SetTmuxVars :call <SID>TmuxVars()<CR>
+endif
 
 " <Plug> definition for "C-c" shortcut.
 nmap <unique> <Plug>ExecuteKeysCc :call ExecuteKeys("c-c")<CR>
