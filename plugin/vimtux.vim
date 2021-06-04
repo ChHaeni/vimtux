@@ -123,7 +123,12 @@ function! s:TmuxVars()
 
     let names = split(s:TmuxSessions(), "\n")
     if len(names) == 1
-        let s:vimtux['session'] = names[0]
+        if stridx(names[0], 'no server running') == -1
+            let s:vimtux['session'] = names[0]
+        else
+            echohl WarningMsg | echomsg names[0] | echohl None
+            return b:vimtux
+        endif
     else
         let s:vimtux['session'] = ''
     endif
