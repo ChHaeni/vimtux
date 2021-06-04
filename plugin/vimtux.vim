@@ -190,7 +190,7 @@ function! s:TmuxVars()
 endfunction
 
 " try popup menu
-function! TmuxPop()
+function! s:TmuxPopup()
     let s:vimtux = {}
     let s:tmuxsessions = split(s:TmuxSessions(), "\n")
     if len(s:tmuxsessions) == 1
