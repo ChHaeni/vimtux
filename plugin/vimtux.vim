@@ -232,6 +232,7 @@ endfunction
 " check current target
 function! CheckTmuxTarget()
     if exists('b:vimtux') && empty(b:vimtux) == 0
+        redraw
         echohl None | echon 'sending to session:' |
                     \ echohl Identifier | echon b:vimtux['session'] |
                     \ echohl None | echon ' window:' |
