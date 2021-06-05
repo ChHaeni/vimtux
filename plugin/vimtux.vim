@@ -194,37 +194,40 @@ function! s:TmuxPopup()
     let s:vimtux = {}
     let s:tmuxsessions = split(s:TmuxSessions(), "\n")
     if len(s:tmuxsessions) == 1
-        call CbSession(0, 1)
+        call s:CbSession(1)
     else
-        call popup_menu(s:tmuxsessions, #{callback: 'CbSession', title: 'session name:', })
+        let Session = {id, index -> s:CbSession(index)}
+        call popup_menu(s:tmuxsessions, #{callback: Session, title: 'session name:', })
     endif
 endfunction
 
 " what to do after selecting session
-function CbSession(id, entry)
-    let s:vimtux['session'] = s:tmuxsessions[a:entry - 1]
+function! s:CbSession(index)
+    let s:vimtux['session'] = s:tmuxsessions[a:index - 1]
     let s:sessionwindows = split(s:TmuxWindows(), "\n")
     if len(s:sessionwindows) == 1
-        call CbWindow(0, 1)
+        call s:CbWindow(1)
     else
-        call popup_menu(s:sessionwindows, #{callback: 'CbWindow', title: 'window name:', })
+        let Window = {id, index -> s:CbWindow(index)}
+        call popup_menu(s:sessionwindows, #{callback: Window, title: 'window name:', })
     endif
 endfunction
 
 " what to do after selecting window
-function CbWindow(id, entry)
-    let s:vimtux['window'] = substitute(s:sessionwindows[a:entry - 1], ":.*$", '', 'g')
+function! s:CbWindow(index)
+    let s:vimtux['window'] = substitute(s:sessionwindows[a:index - 1], ":.*$", '', 'g')
     let s:windowpanes = split(s:TmuxPanes(), "\n")
     if len(s:windowpanes) == 1
-        call CbPane(0, 1)
+        call s:CbPane(1)
     else
-        call popup_menu(s:windowpanes, #{callback: 'CbPane', title: 'pane number:', })
+        let Pane = {id, index -> s:CbPane(index)}
+        call popup_menu(s:windowpanes, #{callback: Pane, title: 'pane number:', })
     endif
 endfunction
 
 " what to do after selecting pane
-function CbPane(id, entry)
-    let s:vimtux['pane'] = s:windowpanes[a:entry - 1]
+function! s:CbPane(index)
+    let s:vimtux['pane'] = s:windowpanes[a:index - 1]
     let b:vimtux = s:vimtux
     call CheckTmuxTarget()
 endfunction
