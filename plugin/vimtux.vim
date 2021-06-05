@@ -332,3 +332,8 @@ nmap <unique> <Plug>NormalModeSendToTmuxMotion :set opfunc=<SID>SendToTmuxMotion
 " 
 " " Key definition for SendToTmuxPrompt() <Plug>.
 " nmap <Leader>sp <Plug>SendToTmuxPlug
+
+" TODO 
+" Make popup nvim compatible
+" Make NormalModeSendToTmuxMotion vim-repeat compatible (atm vim-repeat is too greedy)
+" Add option to select tmux server
