@@ -279,6 +279,9 @@ nmap <unique> <Plug>SendToTmuxPlug :call SendToTmuxPrompt()<CR>
 
 command! -nargs=* Tmux call SendToTmux('<Args><CR>')
 
+" <Plug> definition for CheckTmuxTarget().
+nmap <unique> <Plug>CheckTmux :call CheckTmuxTarget()<CR>
+
 " " One possible way to map keys in .vimrc.
 " " vimtux.vim variables.
 " " Key definition for SendToTmux() <Plug>.
