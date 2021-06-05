@@ -248,6 +248,22 @@ function! CheckTmuxTarget()
     endif
 endfunction
 
+" Send to tmux with motion pending
+function! s:SendToTmuxMotion(type)
+  if a:type == 'line'
+    let lines = { 'start': line("'["), 'end': line("']") }
+    silent exe lines.start . "," . lines.end . "y"
+    silent exe "normal! `]j0"
+    " silent exe "normal! `]j0zz"
+    call SendToTmux(@")
+  else
+    silent exe "normal! `[v`]y`]l"
+    " silent exe "normal! `[v`]y`]lzz"
+    call SendToTmux(@")
+    call ExecuteKeys('Enter')
+  endif
+endfunction
+
 " <Plug> definition for SendToTmux().
 vmap <unique> <Plug>SendSelectionToTmux y :call SendToTmux(@")<CR>
 
@@ -281,6 +297,9 @@ command! -nargs=* Tmux call SendToTmux('<Args><CR>')
 
 " <Plug> definition for CheckTmuxTarget().
 nmap <unique> <Plug>CheckTmux :call CheckTmuxTarget()<CR>
+
+" <Plug> definition for SendToTmuxMotion opfunc.
+nmap <unique> <Plug>NormalModeSendToTmuxMotion :set opfunc=<SID>SendToTmuxMotion<CR>g@
 
 " " One possible way to map keys in .vimrc.
 " " vimtux.vim variables.
