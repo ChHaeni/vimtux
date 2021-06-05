@@ -189,7 +189,7 @@ function! s:TmuxVars()
     call CheckTmuxTarget()
 endfunction
 
-" try popup menu
+" Set variables for TmuxTarget() by using a popup_menu
 function! s:TmuxPopup()
     let s:vimtux = {}
     let s:tmuxsessions = split(s:TmuxSessions(), "\n")
@@ -201,7 +201,7 @@ function! s:TmuxPopup()
     endif
 endfunction
 
-" what to do after selecting session
+" Callback function when selecting session name
 function! s:CbSession(index)
     let s:vimtux['session'] = s:tmuxsessions[a:index - 1]
     let s:sessionwindows = split(s:TmuxWindows(), "\n")
@@ -213,7 +213,7 @@ function! s:CbSession(index)
     endif
 endfunction
 
-" what to do after selecting window
+" Callback function when selecting window name
 function! s:CbWindow(index)
     let s:vimtux['window'] = substitute(s:sessionwindows[a:index - 1], ":.*$", '', 'g')
     let s:windowpanes = split(s:TmuxPanes(), "\n")
@@ -225,7 +225,7 @@ function! s:CbWindow(index)
     endif
 endfunction
 
-" what to do after selecting pane
+" Callback function when selecting pane number
 function! s:CbPane(index)
     let s:vimtux['pane'] = s:windowpanes[a:index - 1]
     let b:vimtux = s:vimtux
@@ -255,7 +255,7 @@ vmap <unique> <Plug>SendSelectionToTmux y :call SendToTmux(@")<CR>
 nmap <unique> <Plug>NormalModeSendToTmux V <Plug>SendSelectionToTmux
 
 " <Plug> definition for SetTmuxVars().
-if exists("g:vimtux_popup") && g:vimtux_popup
+if exists('*popup_menu') && exists("g:vimtux_popup") && g:vimtux_popup
     nmap <unique> <Plug>SetTmuxVars :call <SID>TmuxPopup()<CR>
 else
     nmap <unique> <Plug>SetTmuxVars :call <SID>TmuxVars()<CR>
