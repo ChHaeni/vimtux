@@ -248,6 +248,33 @@ function! CheckTmuxTarget()
     endif
 endfunction
 
+" add fzf selection
+" call fzf#run({'sink': 'e', 'source': 'tmux list-sessions | sed -e "s/:.*$//"'})
+function! SessionFZF()
+    call fzf#run({'sink': 'WindowCmd', 'source': 'tmux list-sessions | sed -e "s/:.*$//"'})
+endfunction
+
+function! s:WindowFZF(session)
+    let s:vimtux = {}
+    let s:vimtux['session'] = a:session
+    call fzf#run({'sink': 'PaneCmd', 'source': 'tmux list-windows -t "' . a:session . '" | grep -e "^\w:" | sed -e "s/\s*([0-9].*//g"'})
+endfunction
+
+function! s:PaneFZF(window)
+    let s:vimtux['window'] = substitute(a:window, ":.*$", '', 'g')
+    call fzf#run({'sink': 'WriteToVimtux', 'source':'tmux list-panes -t "' . s:vimtux['session'] . '":' . s:vimtux['window'] . " | sed -e 's/:.*$//'"})
+endfunction
+
+function! s:AssignFZF(pane)
+    let s:vimtux['pane'] = a:pane
+    let b:vimtux = s:vimtux
+    call CheckTmuxTarget()
+endfunction
+
+command! -nargs=1 -buffer WindowCmd call s:WindowFZF(<f-args>)
+command! -nargs=1 -buffer PaneCmd call s:PaneFZF(<f-args>)
+command! -nargs=1 -buffer WriteToVimtux call s:AssignFZF(<f-args>)
+
 " Send to tmux with motion pending
 function! s:SendToTmuxMotion(type)
   if a:type == 'line'
