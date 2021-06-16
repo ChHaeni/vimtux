@@ -248,21 +248,22 @@ function! CheckTmuxTarget()
     endif
 endfunction
 
-" add fzf selection
-" call fzf#run({'sink': 'e', 'source': 'tmux list-sessions | sed -e "s/:.*$//"'})
-function! SessionFZF()
-    call fzf#run({'sink': 'WindowCmd', 'source': 'tmux list-sessions | sed -e "s/:.*$//"'})
+" fzf session selection
+function! s:SessionFZF()
+    call fzf#run({'sink': 'WindowCmd', 'source': 'tmux list-sessions | sed -e "s/:.*$//"', 'options': ['--header=session name:']})
 endfunction
 
+" fzf window selection
 function! s:WindowFZF(session)
     let s:vimtux = {}
     let s:vimtux['session'] = a:session
-    call fzf#run({'sink': 'PaneCmd', 'source': 'tmux list-windows -t "' . a:session . '" | grep -e "^\w:" | sed -e "s/\s*([0-9].*//g"'})
+    call fzf#run({'sink': 'PaneCmd', 'source': 'tmux list-windows -t "' . a:session . '" | grep -e "^\w:" | sed -e "s/\s*([0-9].*//g"', 'options': ['--header=window name:']})
 endfunction
 
+" fzf pane selection
 function! s:PaneFZF(window)
     let s:vimtux['window'] = substitute(a:window, ":.*$", '', 'g')
-    call fzf#run({'sink': 'WriteToVimtux', 'source':'tmux list-panes -t "' . s:vimtux['session'] . '":' . s:vimtux['window'] . " | sed -e 's/:.*$//'"})
+    call fzf#run({'sink': 'WriteToVimtux', 'source':'tmux list-panes -t "' . s:vimtux['session'] . '":' . s:vimtux['window'] . " | sed -e 's/:.*$//'", 'options': ['--header=pane number:']})
 endfunction
 
 function! s:AssignFZF(pane)
