@@ -254,7 +254,7 @@ function! s:TmuxFZF()
     if len(s:tmuxsessions) == 1
         call s:CbSessionFZF(s:tmuxsessions[0])
     else
-        call fzf#run({'sink': 'WindowCmd', 'source': 'tmux list-sessions | sed -e "s/:.*$//"', 'options': ['--header=session name:']})
+        call fzf#run({'sink': 'WindowCmd', 'source': 'tmux list-sessions | sed -e "s/:.*$//"', 'options': ['--header=session name:', '--cycle']})
     endif
 endfunction
 
@@ -266,7 +266,7 @@ function! s:CbSessionFZF(session)
     if len(s:sessionwindows) == 1
         call s:CbWindowFZF(s:sessionwindows[0])
     else
-        call fzf#run({'sink': 'PaneCmd', 'source': 'tmux list-windows -t "' . a:session . '" | grep -e "^\w:" | sed -e "s/\s*([0-9].*//g"', 'options': ['--header=window name:']})
+        call fzf#run({'sink': 'PaneCmd', 'source': 'tmux list-windows -t "' . a:session . '" | grep -e "^\w:" | sed -e "s/\s*([0-9].*//g"', 'options': ['--header=window name:', '--cycle']})
     endif
 endfunction
 
@@ -277,7 +277,7 @@ function! s:CbWindowFZF(window)
     if len(s:windowpanes) == 1
         call s:CbPaneFZF(s:windowpanes[0])
     else
-        call fzf#run({'sink': 'WriteToVimtux', 'source':'tmux list-panes -t "' . s:vimtux['session'] . '":' . s:vimtux['window'] . " | sed -e 's/:.*$//'", 'options': ['--header=pane number:']})
+        call fzf#run({'sink': 'WriteToVimtux', 'source':'tmux list-panes -t "' . s:vimtux['session'] . '":' . s:vimtux['window'] . " | sed -e 's/:.*$//'", 'options': ['--header=pane number:', '--cycle']})
     endif
 endfunction
 
