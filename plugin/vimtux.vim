@@ -314,9 +314,9 @@ vmap <unique> <Plug>SendSelectionToTmux y :call SendToTmux(@")<CR>
 nmap <unique> <Plug>NormalModeSendToTmux V <Plug>SendSelectionToTmux
 
 " <Plug> definition for SetTmuxVars().
-if exists("g:vimtux_select") && g:vimtux_select && g:loaded_fzf_vim
+if exists("g:vimtux_fzf") && g:vimtux_fzf && g:loaded_fzf_vim
     nmap <unique> <Plug>SetTmuxVars :call <SID>TmuxFZF()<CR>
-if exists('*popup_menu') && exists("g:vimtux_select") && g:vimtux_select
+elseif exists('*popup_menu') && exists("g:vimtux_popup") && g:vimtux_popup
     nmap <unique> <Plug>SetTmuxVars :call <SID>TmuxPopup()<CR>
 else
     nmap <unique> <Plug>SetTmuxVars :call <SID>TmuxVars()<CR>
