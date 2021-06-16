@@ -249,32 +249,47 @@ function! CheckTmuxTarget()
 endfunction
 
 " fzf session selection
-function! s:SessionFZF()
-    call fzf#run({'sink': 'WindowCmd', 'source': 'tmux list-sessions | sed -e "s/:.*$//"', 'options': ['--header=session name:']})
+function! s:TmuxFZF()
+    let s:tmuxsessions = split(s:TmuxSessions(), "\n")
+    if len(s:tmuxsessions) == 1
+        call s:CbSessionFZF(s:tmuxsessions)
+    else
+        call fzf#run({'sink': 'WindowCmd', 'source': 'tmux list-sessions | sed -e "s/:.*$//"', 'options': ['--header=session name:']})
+    endif
 endfunction
 
 " fzf window selection
-function! s:WindowFZF(session)
+function! s:CbSessionFZF(session)
     let s:vimtux = {}
     let s:vimtux['session'] = a:session
-    call fzf#run({'sink': 'PaneCmd', 'source': 'tmux list-windows -t "' . a:session . '" | grep -e "^\w:" | sed -e "s/\s*([0-9].*//g"', 'options': ['--header=window name:']})
+    let s:sessionwindows = split(s:TmuxWindows(), "\n")
+    if len(s:sessionwindows) == 1
+        call s:CbWindowFZF(s:sessionwindows)
+    else
+        call fzf#run({'sink': 'PaneCmd', 'source': 'tmux list-windows -t "' . a:session . '" | grep -e "^\w:" | sed -e "s/\s*([0-9].*//g"', 'options': ['--header=window name:']})
+    endif
 endfunction
 
 " fzf pane selection
-function! s:PaneFZF(window)
+function! s:CbWindowFZF(window)
     let s:vimtux['window'] = substitute(a:window, ":.*$", '', 'g')
-    call fzf#run({'sink': 'WriteToVimtux', 'source':'tmux list-panes -t "' . s:vimtux['session'] . '":' . s:vimtux['window'] . " | sed -e 's/:.*$//'", 'options': ['--header=pane number:']})
+    let s:windowpanes = split(s:TmuxPanes(), "\n")
+    if len(s:windowpanes) == 1
+        call s:CbPaneFZF(s:windowpanes)
+    else
+        call fzf#run({'sink': 'WriteToVimtux', 'source':'tmux list-panes -t "' . s:vimtux['session'] . '":' . s:vimtux['window'] . " | sed -e 's/:.*$//'", 'options': ['--header=pane number:']})
+    endif
 endfunction
 
-function! s:AssignFZF(pane)
+function! s:CbPaneFZF(pane)
     let s:vimtux['pane'] = a:pane
     let b:vimtux = s:vimtux
     call CheckTmuxTarget()
 endfunction
 
-command! -nargs=1 -buffer WindowCmd call s:WindowFZF(<f-args>)
-command! -nargs=1 -buffer PaneCmd call s:PaneFZF(<f-args>)
-command! -nargs=1 -buffer WriteToVimtux call s:AssignFZF(<f-args>)
+command! -nargs=1 -buffer WindowCmd call s:CbSessionFZF(<f-args>)
+command! -nargs=1 -buffer PaneCmd call s:CbWindowFZF(<f-args>)
+command! -nargs=1 -buffer WriteToVimtux call s:CbPaneFZF(<f-args>)
 
 " Send to tmux with motion pending
 function! s:SendToTmuxMotion(type)
@@ -299,6 +314,8 @@ vmap <unique> <Plug>SendSelectionToTmux y :call SendToTmux(@")<CR>
 nmap <unique> <Plug>NormalModeSendToTmux V <Plug>SendSelectionToTmux
 
 " <Plug> definition for SetTmuxVars().
+if exists("g:vimtux_popup") && g:vimtux_popup && g:loaded_fzf_vim
+    nmap <unique> <Plug>SetTmuxVars :call <SID>TmuxFZF()<CR>
 if exists('*popup_menu') && exists("g:vimtux_popup") && g:vimtux_popup
     nmap <unique> <Plug>SetTmuxVars :call <SID>TmuxPopup()<CR>
 else
