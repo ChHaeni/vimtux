@@ -130,12 +130,8 @@ function! s:CheckName(what, names)
 endfunction
 
 
-" Set variables for TmuxTarget().
-function! s:TmuxVars()
-    let s:vimtux = {}
-    if exists('b:vimtux') == 0
-        let b:vimtux = {}
-    endif
+" Set variables for TmuxTarget() in standard/previous manner.
+function! s:TmuxVarsStandard()
 
     let names = split(s:TmuxSessions(), "\n")
     if len(names) == 1
@@ -190,43 +186,42 @@ function! s:TmuxVars()
 endfunction
 
 " Set variables for TmuxTarget() by using a popup_menu
-function! s:TmuxPopup()
-    let s:vimtux = {}
+function! s:TmuxVarsPopup()
     let s:tmuxsessions = split(s:TmuxSessions(), "\n")
     if len(s:tmuxsessions) == 1
-        call s:CbSession(1)
+        call s:CbSessionPopup(1)
     else
-        let Session = {id, index -> s:CbSession(index)}
+        let Session = {id, index -> s:CbSessionPopup(index)}
         call popup_menu(s:tmuxsessions, #{callback: Session, title: 'session name:', })
     endif
 endfunction
 
 " Callback function when selecting session name
-function! s:CbSession(index)
+function! s:CbSessionPopup(index)
     let s:vimtux['session'] = s:tmuxsessions[a:index - 1]
     let s:sessionwindows = split(s:TmuxWindows(), "\n")
     if len(s:sessionwindows) == 1
-        call s:CbWindow(1)
+        call s:CbWindowPopup(1)
     else
-        let Window = {id, index -> s:CbWindow(index)}
+        let Window = {id, index -> s:CbWindowPopup(index)}
         call popup_menu(s:sessionwindows, #{callback: Window, title: 'window name:', })
     endif
 endfunction
 
 " Callback function when selecting window name
-function! s:CbWindow(index)
+function! s:CbWindowPopup(index)
     let s:vimtux['window'] = substitute(s:sessionwindows[a:index - 1], ":.*$", '', 'g')
     let s:windowpanes = split(s:TmuxPanes(), "\n")
     if len(s:windowpanes) == 1
-        call s:CbPane(1)
+        call s:CbPanePopup(1)
     else
-        let Pane = {id, index -> s:CbPane(index)}
+        let Pane = {id, index -> s:CbPanePopup(index)}
         call popup_menu(s:windowpanes, #{callback: Pane, title: 'pane number:', })
     endif
 endfunction
 
 " Callback function when selecting pane number
-function! s:CbPane(index)
+function! s:CbPanePopup(index)
     let s:vimtux['pane'] = s:windowpanes[a:index - 1]
     let b:vimtux = s:vimtux
     call CheckTmuxTarget()
@@ -249,7 +244,7 @@ function! CheckTmuxTarget()
 endfunction
 
 " fzf session selection
-function! s:TmuxFZF()
+function! s:TmuxVarsFZF()
     let s:tmuxsessions = split(s:TmuxSessions(), "\n")
     if len(s:tmuxsessions) == 1
         call s:CbSessionFZF(s:tmuxsessions[0])
@@ -260,7 +255,6 @@ endfunction
 
 " fzf window selection
 function! s:CbSessionFZF(session)
-    let s:vimtux = {}
     let s:vimtux['session'] = a:session
     let s:sessionwindows = split(s:TmuxWindows(), "\n")
     if len(s:sessionwindows) == 1
@@ -307,6 +301,22 @@ function! s:SendToTmuxMotion(type)
   endif
 endfunction
 
+" Choose TmuxVars function 
+function! s:TmuxVars()
+    let s:vimtux = {}
+    if exists('b:vimtux') == 0
+        let b:vimtux = {}
+    endif
+
+    if exists("g:vimtux_fzf") && g:vimtux_fzf && g:loaded_fzf_vim
+        call <SID>TmuxVarsFZF()
+    elseif exists('*popup_menu') && exists("g:vimtux_popup") && g:vimtux_popup
+        call <SID>TmuxVarsPopup()
+    else
+        call <SID>TmuxVarsStandard()
+    endif
+endfunction
+
 " <Plug> definition for SendToTmux().
 vmap <unique> <Plug>SendSelectionToTmux y :call SendToTmux(@")<CR>
 
@@ -314,13 +324,7 @@ vmap <unique> <Plug>SendSelectionToTmux y :call SendToTmux(@")<CR>
 nmap <unique> <Plug>NormalModeSendToTmux V <Plug>SendSelectionToTmux
 
 " <Plug> definition for SetTmuxVars().
-if exists("g:vimtux_fzf") && g:vimtux_fzf && g:loaded_fzf_vim
-    nmap <unique> <Plug>SetTmuxVars :call <SID>TmuxFZF()<CR>
-elseif exists('*popup_menu') && exists("g:vimtux_popup") && g:vimtux_popup
-    nmap <unique> <Plug>SetTmuxVars :call <SID>TmuxPopup()<CR>
-else
-    nmap <unique> <Plug>SetTmuxVars :call <SID>TmuxVars()<CR>
-endif
+nmap <unique> <Plug>SetTmuxVars :call <SID>TmuxVars()<CR>
 
 " <Plug> definition for "C-c" shortcut.
 nmap <unique> <Plug>ExecuteKeysCc :call ExecuteKeys("c-c")<CR>
