@@ -17,10 +17,18 @@ function! ExecuteKeys(keys)
             " This bit sets the target on buffer basis so every tab can have its
             " own target.
             let b:vimtux = g:vimtux
+            call system("tmux send-keys -t " . s:TmuxTarget() . " " . a:keys)
         else
+            let s:vimtux_func = function('s:ExecuteKeysHelper', [a:keys])
             call <SID>TmuxVars()
         end
+    else
+        call system("tmux send-keys -t " . s:TmuxTarget() . " " . a:keys)
     end
+endfunction
+
+" Helper function for sending keys after popup/fzf selection
+function! s:ExecuteKeysHelper(keys)
     call system("tmux send-keys -t " . s:TmuxTarget() . " " . a:keys)
 endfunction
 
@@ -46,8 +54,8 @@ function! SendToTmuxPrompt()
         return
     endif
     call inputrestore()
+    let s:vimtux_send_enter = 1
     call SendToTmux(l:text)
-    call ExecuteKeys("Enter")
 endfunction
 
 
@@ -58,15 +66,28 @@ function! SendToTmux(text)
             " This bit sets the target on buffer basis so every tab can have its
             " own target.
             let b:vimtux = g:vimtux
+            s:SendToTmuxHelper(a:text)
         else
+            let s:vimtux_func = function('s:SendToTmuxHelper', [a:text])
             call <SID>TmuxVars()
         end
+    else
+        s:SendToTmuxHelper(a:text)
     end
+endfunction
+
+" Helper function to call after popup/fzf selection
+function! s:SendToTmuxHelper(text)
     let oldbuffer = system(shellescape("tmux show-buffer"))
     call <SID>SetTmuxBuffer(a:text)
     call system("tmux paste-buffer -t " . s:TmuxTarget())
     call <SID>SetTmuxBuffer(oldbuffer)
+    if exists('s:vimtux_send_enter') && s:vimtux_send_enter
+        call ExecuteKeys('Enter')
+        let s:vimtux_send_enter = 0
+    endif
 endfunction
+
 
 " Setting the target.
 function! s:TmuxTarget()
@@ -183,6 +204,10 @@ function! s:TmuxVarsStandard()
 
     let b:vimtux = s:vimtux
     call CheckTmuxTarget()
+    if !empty(s:vimtux_func)
+        call s:vimtux_func()
+        let s:vimtux_func = {}
+    endif
 endfunction
 
 " Set variables for TmuxTarget() by using a popup_menu
@@ -225,6 +250,10 @@ function! s:CbPanePopup(index)
     let s:vimtux['pane'] = s:windowpanes[a:index - 1]
     let b:vimtux = s:vimtux
     call CheckTmuxTarget()
+    if !empty(s:vimtux_func)
+        call s:vimtux_func()
+        let s:vimtux_func = {}
+    endif
 endfunction
 
 " check current target
@@ -279,6 +308,10 @@ function! s:CbPaneFZF(pane)
     let s:vimtux['pane'] = a:pane
     let b:vimtux = s:vimtux
     call CheckTmuxTarget()
+    if !empty(s:vimtux_func)
+        call s:vimtux_func()
+        let s:vimtux_func = {}
+    endif
 endfunction
 
 command! -nargs=1 WindowCmd call s:CbSessionFZF(<f-args>)
@@ -304,7 +337,7 @@ endfunction
 " Choose TmuxVars function 
 function! s:TmuxVars()
     let s:vimtux = {}
-    if exists('b:vimtux') == 0
+    if !exists('b:vimtux')
         let b:vimtux = {}
     endif
 
