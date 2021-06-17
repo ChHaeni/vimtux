@@ -287,9 +287,9 @@ function! s:CbPaneFZF(pane)
     call CheckTmuxTarget()
 endfunction
 
-command! -nargs=1 -buffer WindowCmd call s:CbSessionFZF(<f-args>)
-command! -nargs=1 -buffer PaneCmd call s:CbWindowFZF(<f-args>)
-command! -nargs=1 -buffer WriteToVimtux call s:CbPaneFZF(<f-args>)
+command! -nargs=1 WindowCmd call s:CbSessionFZF(<f-args>)
+command! -nargs=1 PaneCmd call s:CbWindowFZF(<f-args>)
+command! -nargs=1 WriteToVimtux call s:CbPaneFZF(<f-args>)
 
 " Send to tmux with motion pending
 function! s:SendToTmuxMotion(type)
