@@ -66,18 +66,18 @@ function! SendToTmux(text)
             " This bit sets the target on buffer basis so every tab can have its
             " own target.
             let b:vimtux = g:vimtux
-            SendToTmuxHelper(a:text)
+            s:SendToTmuxHelper(a:text)
         else
-            let s:vimtux_func = function('SendToTmuxHelper', [a:text])
+            let s:vimtux_func = function('s:SendToTmuxHelper', [a:text])
             call s:TmuxVars()
         end
     else
-        SendToTmuxHelper(a:text)
+        call s:SendToTmuxHelper(a:text)
     end
 endfunction
 
 " Helper function to call after popup/fzf selection
-function! SendToTmuxHelper(text)
+function! s:SendToTmuxHelper(text)
     let oldbuffer = system(shellescape("tmux show-buffer"))
     call <SID>SetTmuxBuffer(a:text)
     call system("tmux paste-buffer -t " . s:TmuxTarget())
