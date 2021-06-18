@@ -54,37 +54,35 @@ function! SendToTmuxPrompt()
         return
     endif
     call inputrestore()
-    let s:vimtux_send_enter = 1
-    call SendToTmux(l:text)
+    call SendToTmux(l:text, 1)
 endfunction
 
 
 " Main function.
-function! SendToTmux(text)
+function! SendToTmux(text, enter)
     if !exists("b:vimtux")
         if exists("g:vimtux")
             " This bit sets the target on buffer basis so every tab can have its
             " own target.
             let b:vimtux = g:vimtux
-            s:SendToTmuxHelper(a:text)
+            s:SendToTmuxHelper(a:text, a:enter)
         else
-            let s:vimtux_func = function('s:SendToTmuxHelper', [a:text])
+            let s:vimtux_func = function('s:SendToTmuxHelper', [a:text, a:enter])
             call s:TmuxVars()
         end
     else
-        call s:SendToTmuxHelper(a:text)
+        call s:SendToTmuxHelper(a:text, a:enter)
     end
 endfunction
 
 " Helper function to call after popup/fzf selection
-function! s:SendToTmuxHelper(text)
+function! s:SendToTmuxHelper(text, enter)
     let oldbuffer = system(shellescape("tmux show-buffer"))
     call <SID>SetTmuxBuffer(a:text)
     call system("tmux paste-buffer -t " . s:TmuxTarget())
     call <SID>SetTmuxBuffer(oldbuffer)
-    if exists('s:vimtux_send_enter') && s:vimtux_send_enter
+    if a:enter
         call ExecuteKeys('Enter')
-        let s:vimtux_send_enter = 0
     endif
 endfunction
 
@@ -325,12 +323,11 @@ function! s:SendToTmuxMotion(type)
     silent exe lines.start . "," . lines.end . "y"
     silent exe "normal! `]j0"
     " silent exe "normal! `]j0zz"
-    call SendToTmux(@")
+    call SendToTmux(@", 0)
   else
     silent exe "normal! `[v`]y`]l"
     " silent exe "normal! `[v`]y`]lzz"
-    let s:vimtux_send_enter = 1
-    call SendToTmux(@")
+    call SendToTmux(@", 1)
   endif
 endfunction
 
@@ -351,7 +348,7 @@ function! s:TmuxVars()
 endfunction
 
 " <Plug> definition for SendToTmux().
-vmap <unique> <Plug>SendSelectionToTmux y :call SendToTmux(@")<CR>
+vmap <unique> <Plug>SendSelectionToTmux y :call SendToTmux(@", 0)<CR>
 
 " <Plug> definition for SendSelectionToTmu().
 nmap <unique> <Plug>NormalModeSendToTmux V <Plug>SendSelectionToTmux
@@ -375,7 +372,7 @@ nmap <unique> <Plug>ExecuteKeysPlug :call ExecuteKeysPrompt()<CR>
 " <Plug> definition for SendToTmuxPrompt().
 nmap <unique> <Plug>SendToTmuxPlug :call SendToTmuxPrompt()<CR>
 
-command! -nargs=* Tmux call SendToTmux('<Args><CR>')
+command! -nargs=* Tmux call SendToTmux('<Args><CR>', 0)
 
 " <Plug> definition for CheckTmuxTarget().
 nmap <unique> <Plug>CheckTmux :call CheckTmuxTarget()<CR>
