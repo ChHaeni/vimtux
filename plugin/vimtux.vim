@@ -66,13 +66,13 @@ function! SendToTmux(text)
             " This bit sets the target on buffer basis so every tab can have its
             " own target.
             let b:vimtux = g:vimtux
-            s:SendToTmuxHelper(a:text)
+            <SID>SendToTmuxHelper(a:text)
         else
-            let s:vimtux_func = function('s:SendToTmuxHelper', [a:text])
+            let s:vimtux_func = function('<SID>SendToTmuxHelper', [a:text])
             call <SID>TmuxVars()
         end
     else
-        s:SendToTmuxHelper(a:text)
+        <SID>SendToTmuxHelper(a:text)
     end
 endfunction
 
@@ -204,7 +204,7 @@ function! s:TmuxVarsStandard()
 
     let b:vimtux = s:vimtux
     call CheckTmuxTarget()
-    if !empty(s:vimtux_func)
+    if exists('s:vimtux_func') && !empty(s:vimtux_func)
         call s:vimtux_func()
         let s:vimtux_func = {}
     endif
@@ -250,7 +250,7 @@ function! s:CbPanePopup(index)
     let s:vimtux['pane'] = s:windowpanes[a:index - 1]
     let b:vimtux = s:vimtux
     call CheckTmuxTarget()
-    if !empty(s:vimtux_func)
+    if exists('s:vimtux_func') && !empty(s:vimtux_func)
         call s:vimtux_func()
         let s:vimtux_func = {}
     endif
@@ -308,7 +308,7 @@ function! s:CbPaneFZF(pane)
     let s:vimtux['pane'] = a:pane
     let b:vimtux = s:vimtux
     call CheckTmuxTarget()
-    if !empty(s:vimtux_func)
+    if exists('s:vimtux_func') && !empty(s:vimtux_func)
         call s:vimtux_func()
         let s:vimtux_func = {}
     endif
@@ -329,8 +329,8 @@ function! s:SendToTmuxMotion(type)
   else
     silent exe "normal! `[v`]y`]l"
     " silent exe "normal! `[v`]y`]lzz"
+    let s:vimtux_send_enter = 1
     call SendToTmux(@")
-    call ExecuteKeys('Enter')
   endif
 endfunction
 
