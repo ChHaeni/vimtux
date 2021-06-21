@@ -65,7 +65,7 @@ function! SendToTmux(text, enter)
             " This bit sets the target on buffer basis so every tab can have its
             " own target.
             let b:vimtux = g:vimtux
-            s:SendToTmuxHelper(a:text, a:enter)
+            call s:SendToTmuxHelper(a:text, a:enter)
         else
             let s:vimtux_func = function('s:SendToTmuxHelper', [a:text, a:enter])
             call s:TmuxVars()
