@@ -1,5 +1,34 @@
 # vimtux
 
+## Fork Related Things
+This fork extends the original plugin [`brauner/vimtux`](https://github.com/brauner/vimtux)
+by adding the following functionalities listed below.
+Note that I extended this plugin shortly after I started to use Vim, so don't expect
+neither a clean vimscript syntax nor added functionalities without bugs! So far, however,
+I'm more than happy with the actual state of this forked plugin...
+
+### Added Functionalities
+- Add option to select tmux pane visually, either by `popup_menu` (`let g:vimtux_popup = 1`) or by `fzf` (`let g:vimtux_fzf = 1`)
+- Add function to show/check currently selected pane: `CheckTmux`
+- Add function to send text to tmux using motions (`.` repeatable): `NormalModeSendToTmuxMotion`
+
+### My (Fork-Related) Settings and Mappings
+```vim
+" choose pane visually
+if has('nvim')
+    let g:vimtux_fzf = 1
+else
+    let g:vimtux_popup = 1
+endif
+
+" motion mapping (r because I'm mostly using vimtux for R scripting)
+" now I can send text by using motion commands, e.g. <leader>rap, etc.
+" these commands are repeatable using .
+nmap <silent> <leader>r <Plug>NormalModeSendToTmuxMotion
+" check currently selected pane
+nmap <leader>S <Plug>CheckTmux
+```
+
 ## Installation
 - `Vundle`:
     - In your `.vimrc` place `Plugin 'brauner/vimtux'` between
