@@ -189,6 +189,8 @@ function! s:TmuxVarsStandard()
     endif
 
     let s:vimtux['window'] =  substitute(window, ":.*$" , '', 'g')
+    let s:tmp = substitute(window, "^[0-9]*[:]\\\\* *", '', '')
+    let s:vimtux['window_name'] = substitute(s:tmp, '\\\? \?[*-]\?$', '', '')
 
     let panes = split(s:TmuxPanes(), "\n")
     if len(panes) == 1
@@ -234,6 +236,8 @@ endfunction
 " Callback function when selecting window name
 function! s:CbWindowPopup(index)
     let s:vimtux['window'] = substitute(s:sessionwindows[a:index - 1], ":.*$", '', 'g')
+    let s:tmp = substitute(s:sessionwindows[a:index - 1], "^[0-9]*[:]\\\\* *", '', '')
+    let s:vimtux['window_name'] = substitute(s:tmp, '\\\? \?[*-]\?$', '', '')
     let s:windowpanes = split(s:TmuxPanes(), "\n")
     if len(s:windowpanes) == 1
         call s:CbPanePopup(1)
@@ -294,6 +298,8 @@ endfunction
 " fzf pane selection
 function! s:CbWindowFZF(window)
     let s:vimtux['window'] = substitute(a:window, ":.*$", '', 'g')
+    let s:tmp = substitute(a:window, "^[0-9]*[:]\\\\* *", '', '')
+    let s:vimtux['window_name'] = substitute(s:tmp, '\\\? \?[*-]\?$', '', '')
     let s:windowpanes = split(s:TmuxPanes(), "\n")
     if len(s:windowpanes) == 1
         call s:CbPaneFZF(s:windowpanes[0])
