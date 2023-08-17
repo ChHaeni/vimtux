@@ -347,6 +347,41 @@ function! s:TmuxVars()
     endif
 endfunction
 
+" make active window blink
+function! BlinkActive(...)
+    " check b:vimtux set?
+    if !exists("b:vimtux")
+        echomsg 'no tmux target defined'
+        return
+    endif
+    let color = 'red'
+    if a:0 == 1
+        let color = a:1
+    elseif a:0 > 1
+        echoerr 'only one argument (color) is allowed'
+    endif
+    " get session string
+    let sess = b:vimtux['session'] .. ':' .. b:vimtux['window'] .. '.' .. b:vimtux['pane']
+    " get current bg color
+    let old_bg = system("tmux show-options -t " .. sess .. " window-active-style")
+    if old_bg != ''
+        let old_bg = substitute(old_bg, ".*bg=", "", "")
+    endif
+    " blink twice
+    for i in [1, 2]
+        sleep 50m
+        " set bg to color
+        silent execute "!tmux set-option -t " .. sess .. " window-active-style bg=" .. color
+        sleep 50m
+        " set bg back
+        if old_bg == ''
+            silent execute "!tmux set-option -t " .. sess .. " -u window-active-style"
+        else
+            silent execute "!tmux set-option -t " .. sess .. " window-active-style bg=" .. old_bg
+        endif
+    endfor
+endfunction
+
 " <Plug> definition for SendToTmux().
 vmap <unique> <Plug>SendSelectionToTmux y :call SendToTmux(@", 0)<CR>
 
